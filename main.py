@@ -1,50 +1,43 @@
 import pokebase as pb
 import random
-from flask import Flask, render_template, request,url_for, redirect
+from flask import Flask, render_template, request,url_for, redirect, session
 
 
 app = Flask(__name__)
+# require a secret key to use session variable
+app.secret_key = "secretPokemon"
 
-# def random_pokemon():
-#     id_num = random.randint(1,151)
-#     name = pb.pokemon(id)
-#     height = name.height
-#     image = pb.SpriteResource('pokemon', id)
-#     return f"No.{id_num} Name: {name} Height: {height}, Image path: {image.path}"
+@app.route('/')
+def random_pokemon():
+    """
+    Returns a random pokemon from pokebase / the API
+    :return:
+    """
 
-## use a decorator function to generate the poke data?
-# cant work out how to access the pokemon name to check if the user guess is correct
-
-
-
-
-def get_pokemon():
     id_num = random.randint(1, 151)
     pokemon = pb.pokemon(id_num)
     image = pb.SpriteResource('pokemon', id_num)
-    new_pokemon = {
-        "id_num": id_num,
-        "name": pokemon,
-        "height": pokemon.height,
-        "image": image.url
-    }
-    return new_pokemon
+    height = pokemon.height
+    session['pokemon_name'] = str(pokemon)
+    print(f"Session variable = {session['pokemon_name']}")
 
-new_pokemon = get_pokemon()
-
-
-@app.route('/')
-def random_pokemon(new_pokemon):
-    return render_template('index.html', p_num=new_pokemon["id_num"], p_name=new_pokemon["name"],
-                           p_height=new_pokemon["height"], p_image=new_pokemon["image"])
+    return render_template('index.html', p_num=id_num, p_name=pokemon,
+                           p_height=height, p_image=image.url)
 
 
 
 @app.route('/check_answer', methods=["POST"])
 def check_answer():
+    """
+    Recieves user answer via POST and checks against the session variable of the pokemon name
+    returns route to correct/incorrect page
+    :return:
+    """
     user_answer = request.form["guess"]
-    if user_answer != "":
-        return f"Check answer page. User answer = {user_answer}"
+    if user_answer != session['pokemon_name']:
+        return f" Incorrect answer. User answer = {user_answer}"
+    elif user_answer == session['pokemon_name']:
+        return f"correct answer! User answer = {user_answer}"
     else:
         return redirect(url_for('random_pokemon'))
 
@@ -60,3 +53,4 @@ if __name__ == "__main__":
 # get the user answer
 # check user answer
 # display page based on correct/incorrect answer
+# update the user score
