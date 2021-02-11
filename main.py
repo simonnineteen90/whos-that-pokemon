@@ -11,6 +11,7 @@ app.secret_key = "secretPokemon"
 @app.route('/')
 def start():
     session['chosen_ids'] = []
+    session['user_score'] = 0
     return render_template('index.html')
 
 
@@ -21,25 +22,25 @@ def random_pokemon():
     :return:
     """
     #session['chosen_ids'] = []
-    id_num = random.randint(1, 151)
+    session['current_id_num'] = random.randint(1, 151)
 
     # while the id_num is in the chosen_ids list generate another random number and check that number
     # to stop duplicate pokemon coming up
-    while id_num in session['chosen_ids']:
-        id_num = random.randint(1, 151)
+    while session['current_id_num'] in session['chosen_ids']:
+        session['current_id_num'] = random.randint(1, 151)
 
-    #if session['chosen_ids'] length is > 151 then the game is completed.
 
-    session['chosen_ids'].append(id_num)
+    session['chosen_ids'].append(session['current_id_num'])
     print(session['chosen_ids'])
-    pokemon = pb.pokemon(id_num)
-    image = pb.SpriteResource('pokemon', id_num)
+    pokemon = pb.pokemon(session['current_id_num'])
+    image = pb.SpriteResource('pokemon', session['current_id_num'])
     height = pokemon.height
     session['pokemon_name'] = str(pokemon)
     print(f"Session variable = {session['pokemon_name']}")
 
-    return render_template('random_pokemon.html', p_num=id_num, p_name=pokemon,
-                           p_height=height, p_image=image.url)
+
+    return render_template('random_pokemon.html', p_num=session['current_id_num'], p_name=pokemon,
+                           p_height=height, p_image=image.url, score=session['user_score'])
 
 
 @app.route('/check_answer', methods=["POST"])
@@ -49,11 +50,17 @@ def check_answer():
     returns route to correct/incorrect page
     :return:
     """
-    user_answer = request.form["guess"]
+    image = pb.SpriteResource('pokemon', session['current_id_num'])
+    print(image)
+
+    user_answer = request.form["guess"].lower()
     if user_answer != session['pokemon_name']:
-        return render_template('incorrect.html')
+        return render_template('incorrect.html', p_image=image.url, p_name=session['pokemon_name'])
     elif user_answer == session['pokemon_name']:
-        return render_template('correct.html')
+        session['user_score'] += 1
+        if len(session['chosen_ids']) == 150:
+            return "Congratulations you have named all 151. You are a pokemon master!"
+        return render_template('correct.html', p_image=image.url, p_name=session['pokemon_name'])
     else:
         return redirect(url_for('random_pokemon'))
 
