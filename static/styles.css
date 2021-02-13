@@ -1,5 +1,65 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap');
+
+html {
+        min-height: 100%;
+        background: url(images/yellow-411x731-bg.png) no-repeat fixed;
+        background-size: cover;
+        background-position: center center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-family: 'Roboto Slab', serif;
+
+
+    }
+
+
 .clipped {
     filter: brightness(5%);
     width: 250px;
 
 }
+
+
+.container {
+    width: 767px;
+    height: 70vh;
+    margin: 0;
+    background-color: rgba(255,255,255,.8);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+
+}
+
+.button {
+    display:inline-block;
+    padding:0.35em 1.2em;
+    border:0.1em solid black;
+    margin:0 0.3em 0.3em 0;
+    border-radius:0.12em;
+    box-sizing: border-box;
+    text-decoration:none;
+    font-weight:300;
+    color:black;
+    text-align:center;
+
+
+}
+
+/*
+@media only screen and (min-width: 1000px) {
+
+    body {
+        color: red;
+    }
+
+}
+
+*/
+
