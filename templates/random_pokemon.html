@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Who's That Pokemon!</title>
-    <link rel="stylesheet" href="static/styles.css">
-</head>
-<body>
+{% extends 'base.html' %}
+
+
+
+{% block body %}
+
     <h1>Who's That Pokemon!</h1>
     <img class="clipped" src="{{ p_image }}" alt="pokemon_image">
-    <p> Name: ? Number: {{ p_num }} Height: {{ p_height }} </p>
-    <p>Current score = {{ score }}</p>
+
 
     <form action="/check_answer" method="post">
-    <input type="text" name="guess">
-    <input type="submit">
+        <input type="text" name="guess" placeholder="Enter your guess...">
+        <input class="submit-button" type="submit" value=">">
     </form>
-</body>
-</html>
+
+    <p>Current score = {{ score }}</p>
+
+{% endblock %}

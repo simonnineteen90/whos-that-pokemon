@@ -1,13 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Incorrect Answer</title>
-</head>
-<body>
+
+{% extends 'base.html' %}
+
+
+
+
+{% block body %}
+
     <h1>Incorrect Answer</h1>
     <p>It was {{ p_name }}!</p>
-    <img src="{{ p_image }}" alt="pokemon_image">
-    <a href="{{ url_for('start') }}">Restart</a>
-</body>
-</html>
+    <img class="pokemon" src="{{ p_image }}" alt="pokemon_image">
+    <a class="button" href="{{ url_for('start') }}">Restart</a>
+
+{% endblock %}
+
+
+
+
+
+
+
+

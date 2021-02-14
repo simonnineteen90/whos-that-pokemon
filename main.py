@@ -10,9 +10,11 @@ app.secret_key = "secretPokemon"
 
 @app.route('/')
 def start():
+
+    pika = pb.SpriteResource('pokemon', 25)
     session['chosen_ids'] = []
     session['user_score'] = 0
-    return render_template('index.html')
+    return render_template('index.html', pikachu=pika.url)
 
 
 @app.route('/random_pokemon')
@@ -21,7 +23,7 @@ def random_pokemon():
     Returns a random pokemon from pokebase / the API
     :return:
     """
-    #session['chosen_ids'] = []
+
     session['current_id_num'] = random.randint(1, 151)
 
     # while the id_num is in the chosen_ids list generate another random number and check that number

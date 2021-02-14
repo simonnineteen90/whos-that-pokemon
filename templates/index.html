@@ -1,27 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Whos That Pokemon!</title>
-    <link rel="stylesheet" href="static/styles.css">
-
-</head>
+{% extends 'base.html' %}
 
 
 
-<body>
-    <div class="container">
-        <h1>Who's that <br> Pokemon!</h1>
-        <p>?</p>
+
+{% block body %}
+
+    <h1>Who's that <br> Pokemon!</h1>
+        <p>A pokemon guessing game using the pokeAPI and Flask/Python</p>
+
+        <div>
+            <img class="pokemon" src="{{ pikachu }}" alt="pikachu_pokemon">
+        </div>
 
         <div>
             <a class=button href="{{ url_for('random_pokemon') }}">start</a>
-            <a class=button href="{{ url_for('random_pokemon') }}">leaderboard</a>
+            <a class=button href="#">leaderboard</a>
         </div>
 
-
-    </div>
-
-
-</body>
-</html>
+{% endblock %}
