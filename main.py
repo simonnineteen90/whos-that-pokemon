@@ -1,11 +1,30 @@
 import pokebase as pb
 import random
 from flask import Flask, render_template, request,url_for, redirect, session
+from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 # require a secret key to use session variable
 app.secret_key = "secretPokemon"
+
+## CREATE DATABASE
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///leaderboard-collection.db"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+## Create Table
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    score = db.Column(db.Integer, unique=False, nullable=False)
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+db.create_all()
+#leaderboard = session.query(User).all()
+#print(leaderboard)
 
 
 @app.route('/')
@@ -15,6 +34,15 @@ def start():
     session['chosen_ids'] = []
     session['user_score'] = 0
     return render_template('index.html', pikachu=pika.url)
+
+
+@app.route('/add')
+def add():
+    new_user = User(name="A User Name 2", score=10)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return "Added a user to db"
 
 
 @app.route('/random_pokemon')
