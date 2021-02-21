@@ -1,48 +1,49 @@
 import pokebase as pb
 import random
-from flask import Flask, render_template, request,url_for, redirect, session
+from flask import Flask, render_template, request,url_for, redirect
+from flask import session as flask_session
 from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 # require a secret key to use session variable
 app.secret_key = "secretPokemon"
-
-## CREATE DATABASE
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///leaderboard-collection.db"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
-## Create Table
+# using SQL Alchemy to set up the leaderboard as an SQLite database
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    score = db.Column(db.Integer, unique=False, nullable=False)
+    username = db.Column(db.String(80), unique=False, nullable=False)
+    score = db.Column(db.Integer, nullable=False, default='0')
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f"User: {self.id}, {self.username}, {self.score}"
+
 
 db.create_all()
-#leaderboard = session.query(User).all()
-#print(leaderboard)
-
 
 @app.route('/')
 def start():
 
     pika = pb.SpriteResource('pokemon', 25)
-    session['chosen_ids'] = []
-    session['user_score'] = 0
+    flask_session['chosen_ids'] = []
+    flask_session['user_score'] = 0
+
     return render_template('index.html', pikachu=pika.url)
 
 
-@app.route('/add')
-def add():
-    new_user = User(name="A User Name 2", score=10)
-    db.session.add(new_user)
+
+@app.route('/leaderboard', methods=["POST"])
+def leaderboard():
+    new_leaderboard_name = request.form["leaderboard_name"]
+    new_highscore= User(username=new_leaderboard_name, score=flask_session['user_score'])
+    db.session.add(new_highscore)
     db.session.commit()
 
-    return "Added a user to db"
+    leaderboard = User.query.all()
+    return f"New name for leaderboard: {new_leaderboard_name}. Score:{flask_session['user_score']}" \
+           f"<br/> Leaderboard data: {leaderboard}"
 
 
 @app.route('/random_pokemon')
@@ -52,25 +53,23 @@ def random_pokemon():
     :return:
     """
 
-    session['current_id_num'] = random.randint(1, 151)
+    flask_session['current_id_num'] = random.randint(1, 151)
 
     # while the id_num is in the chosen_ids list generate another random number and check that number
     # to stop duplicate pokemon coming up
-    while session['current_id_num'] in session['chosen_ids']:
-        session['current_id_num'] = random.randint(1, 151)
+    while flask_session['current_id_num'] in flask_session['chosen_ids']:
+        flask_session['current_id_num'] = random.randint(1, 151)
 
+    # adds the current ID to the list of chosen IDs
+    flask_session['chosen_ids'].append(flask_session['current_id_num'])
+    print(flask_session['chosen_ids'])
+    pokemon = pb.pokemon(flask_session['current_id_num']) # get the corresponding pokemon for the ID from the API
+    image = pb.SpriteResource('pokemon', flask_session['current_id_num'])
+    flask_session['pokemon_name'] = str(pokemon)
+    print(f"flask_session variable = {flask_session['pokemon_name']}")
 
-    session['chosen_ids'].append(session['current_id_num'])
-    print(session['chosen_ids'])
-    pokemon = pb.pokemon(session['current_id_num'])
-    image = pb.SpriteResource('pokemon', session['current_id_num'])
-    height = pokemon.height
-    session['pokemon_name'] = str(pokemon)
-    print(f"Session variable = {session['pokemon_name']}")
-
-
-    return render_template('random_pokemon.html', p_num=session['current_id_num'], p_name=pokemon,
-                           p_height=height, p_image=image.url, score=session['user_score'])
+    return render_template('random_pokemon.html', p_num=flask_session['current_id_num'], p_name=pokemon,
+                           p_image=image.url, score=flask_session['user_score'])
 
 
 @app.route('/check_answer', methods=["POST"])
@@ -80,17 +79,19 @@ def check_answer():
     returns route to correct/incorrect page
     :return:
     """
-    image = pb.SpriteResource('pokemon', session['current_id_num'])
+    image = pb.SpriteResource('pokemon', flask_session['current_id_num'])
     print(image)
 
     user_answer = request.form["guess"].lower()
-    if user_answer != session['pokemon_name']:
-        return render_template('incorrect.html', p_image=image.url, p_name=session['pokemon_name'])
-    elif user_answer == session['pokemon_name']:
-        session['user_score'] += 1
-        if len(session['chosen_ids']) == 150:
+    if user_answer != flask_session['pokemon_name']:
+        return render_template('incorrect.html', p_image=image.url, p_name=flask_session['pokemon_name'],
+                               current_score=flask_session['user_score'])
+
+    elif user_answer == flask_session['pokemon_name']:
+        flask_session['user_score'] += 1
+        if len(flask_session['chosen_ids']) == 150:
             return "Congratulations you have named all 151. You are a pokemon master!"
-        return render_template('correct.html', p_image=image.url, p_name=session['pokemon_name'])
+        return render_template('correct.html', p_image=image.url, p_name=flask_session['pokemon_name'])
     else:
         return redirect(url_for('random_pokemon'))
 

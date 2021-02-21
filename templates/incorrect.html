@@ -9,6 +9,17 @@
     <h1>Incorrect Answer</h1>
     <p>It was {{ p_name }}!</p>
     <img class="pokemon" src="{{ p_image }}" alt="pokemon_image">
+
+
+
+    <h2>Your final score is: {{ current_score }}. Add your name to the leaderboard!</h2>
+
+     <form action="/leaderboard" method="post">
+        <input type="text" name="leaderboard_name" placeholder="Enter your name">
+        <input class="submit-button" type="submit" value=">">
+     </form>
+
+
     <a class="button" href="{{ url_for('start') }}">Restart</a>
 
 {% endblock %}
