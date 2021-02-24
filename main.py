@@ -11,6 +11,7 @@ app.secret_key = "secretPokemon"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
+
 # using SQL Alchemy to set up the leaderboard as an SQLite database
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -34,16 +35,20 @@ def start():
 
 
 
-@app.route('/leaderboard', methods=["POST"])
+@app.route('/leaderboard', methods=["POST", "GET"])
 def leaderboard():
-    new_leaderboard_name = request.form["leaderboard_name"]
-    new_highscore= User(username=new_leaderboard_name, score=flask_session['user_score'])
-    db.session.add(new_highscore)
-    db.session.commit()
+    #allows the leaderboard to be viewed without updating/adding to it
+    if request.method == 'POST':
+        new_leaderboard_name = request.form["leaderboard_name"]
+        new_highscore= User(username=new_leaderboard_name, score=flask_session['user_score'])
+        db.session.add(new_highscore)
+        db.session.commit()
+
 
     leaderboard = User.query.all()
-    return f"New name for leaderboard: {new_leaderboard_name}. Score:{flask_session['user_score']}" \
-           f"<br/> Leaderboard data: {leaderboard}"
+    # return f"New name for leaderboard: {new_leaderboard_name}. Score:{flask_session['user_score']}" \
+    #        f"<br/> Leaderboard data: {leaderboard[0]}"
+    return render_template('leaderboard.html', leaderboard=leaderboard)
 
 
 @app.route('/random_pokemon')
