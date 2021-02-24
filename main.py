@@ -3,7 +3,7 @@ import random
 from flask import Flask, render_template, request,url_for, redirect
 from flask import session as flask_session
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy import desc
 
 app = Flask(__name__)
 # require a secret key to use session variable
@@ -26,7 +26,10 @@ db.create_all()
 
 @app.route('/')
 def start():
-
+    """
+    Resets the session variables to restart the game.
+    :return: Home page for the game.
+    """
     pika = pb.SpriteResource('pokemon', 25)
     flask_session['chosen_ids'] = []
     flask_session['user_score'] = 0
@@ -34,20 +37,22 @@ def start():
     return render_template('index.html', pikachu=pika.url)
 
 
-
 @app.route('/leaderboard', methods=["POST", "GET"])
 def leaderboard():
+    """
+    if a post request is made then add the new highscore to teh database else just display the leaderboard
+    :return: route displaying the html page for the leaderboard
+    """
     #allows the leaderboard to be viewed without updating/adding to it
     if request.method == 'POST':
-        new_leaderboard_name = request.form["leaderboard_name"]
+        new_leaderboard_name = request.form["leaderboard_name"] #store the users input name
+        #add the new highscore to the database
         new_highscore= User(username=new_leaderboard_name, score=flask_session['user_score'])
         db.session.add(new_highscore)
         db.session.commit()
 
+    leaderboard = User.query.order_by(desc(User.score)).limit(10).all()
 
-    leaderboard = User.query.all()
-    # return f"New name for leaderboard: {new_leaderboard_name}. Score:{flask_session['user_score']}" \
-    #        f"<br/> Leaderboard data: {leaderboard[0]}"
     return render_template('leaderboard.html', leaderboard=leaderboard)
 
 

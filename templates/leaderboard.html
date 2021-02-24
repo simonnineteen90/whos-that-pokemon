@@ -12,15 +12,16 @@
             <th>Position</th>
             <th>Name</th>
             <th>Score</th>
-            <th>Date</th>
         </tr>
 
+
+
         {% for item in leaderboard %}
+
             <tr>
-                <td>0</td>
-                <td>{{ item.username }}</td>
+                <td>{{ loop.index }} </td>
+                <td>{{ item.username.title() }}</td>
                 <td>{{ item.score }}</td>
-                <td>1/1/2021</td>
             </tr>
         {% endfor %}
 
